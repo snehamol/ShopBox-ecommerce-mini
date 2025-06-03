@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/Header";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -16,15 +16,15 @@ export default function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
-        const productData = res.data;
-        setProduct(productData);
-        setSelectedImage(productData.images?.[0] || "");
-        setSelectedSize(productData.sizeOptions?.[0] || "");
-        setSelectedColor(productData.colorOptions?.[0] || "");
-        setImageLoaded(false);
-      } catch (error) {
+     try {
+      const res = await axios.get(`${API_BASE_URL}/products/${id}`);
+      const productData = res.data;
+      setProduct(productData);
+      setSelectedImage(productData.images?.[0] || "");
+      setSelectedSize(productData.sizeOptions?.[0] || "");
+      setSelectedColor(productData.colorOptions?.[0] || "");
+      setImageLoaded(false);
+    } catch (error){
         console.error("Failed to fetch product:", error);
       }
     };

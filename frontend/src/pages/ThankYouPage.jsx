@@ -17,11 +17,11 @@ export default function ThankYouPage() {
       return;
     }
 
-    fetch(`http://localhost:5000/api/orders/${orderNumber}`)
+      fetch(`${API_BASE_URL}/orders/${orderNumber}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch order details.");
-        return res.json();
-      })
+      if (!res.ok) throw new Error("Failed to fetch order details.");
+      return res.json();
+    })
       .then((data) => {
         setOrderDetails(data);
         setLoading(false);
