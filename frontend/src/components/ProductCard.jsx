@@ -1,22 +1,33 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const ProductCard = ({ product }) => {
+export default function ProductCard({ product }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/product/${product._id}`);
+  };
+
   return (
-    <div className="w-full max-w-[120px] sm:max-w-xs border rounded-xl shadow p-2 sm:p-4 bg-white flex flex-col items-center">
-      <Link to={`/product/${product._id}`} className="w-full text-center">
+    <div
+      onClick={handleClick}
+      className="border rounded-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
+    >
+      <div className="overflow-hidden h-24 md:h-48">
         <img
-          src={product.images?.[0] || "/placeholder.jpg"}
+          src={`/images/${product.images[0]}`}
           alt={product.title}
-          className="w-[100px] h-[100px] sm:w-full sm:h-40 object-cover rounded-md mb-1 sm:mb-2 transition-transform duration-300 transform hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <h3 className="text-xs sm:text-lg font-semibold text-center leading-snug break-words sm:truncate">
+      </div>
+
+      <div className="p-2 md:p-3">
+        
+        <h2 className="text-xs md:text-base font-semibold break-words">
           {product.title}
-        </h3>
-        <p className="text-gray-700 text-xs sm:text-base font-medium mt-1">RS.{product.price}.00</p>
-      </Link>
+        </h2>
+        <p className="text-gray-700 text-xs md:text-sm mt-1">RS.{product.price}.00</p>
+      </div>
     </div>
   );
-};
-
-export default ProductCard;
+}

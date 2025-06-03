@@ -1,13 +1,21 @@
-import React from "react";
+import { Link } from "react-router-dom";
 
-const Header = () => {
+export default function Header() {
   return (
-    <header className="bg-[#001f3f] text-white p-4 shadow-md">
-      <div className="container mx-auto text-center">
-        <h1 className="text-2xl font-bold tracking-wide">ShopBox</h1>
+    <header className="bg-black text-white p-4 relative flex items-center">
+      
+      <div>
+        <Link
+          to="/"
+          className="bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition"
+        >
+          Home
+        </Link>
       </div>
+
+      <h1 className="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">
+        <Link to="/">ShopBox</Link>
+      </h1>
     </header>
   );
-};
-
-export default Header;
+}

@@ -1,105 +1,106 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import Header from "../components/Header";
 
-const ProductDetail = () => {
+export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/products/${id}`)
-      .then((res) => {
-        setProduct(res.data);
-        setSelectedImage(res.data.images[0] || "");
-        if (res.data.variants?.sizes?.length > 0) {
-          setSelectedSize(res.data.variants.sizes[0]);
-        }
-        if (res.data.variants?.colors?.length > 0) {
-          setSelectedColor(res.data.variants.colors[0]);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, [id]);
-
-  const handleQuantityChange = (type) => {
-    setQuantity((prev) => (type === "inc" ? prev + 1 : prev > 1 ? prev - 1 : 1));
-  };
-
-  const handleBuyNow = () => {
-    if (!selectedSize || !selectedColor) {
-      alert("Please select size and color before proceeding.");
-      return;
-    }
-
-    const selectedProduct = {
-      id: product._id || product.id,
-      title: product.title,
-      image: selectedImage,
-      color: selectedColor,
-      size: selectedSize,
-      quantity,
-      price: product.price,
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const productData = res.data;
+        setProduct(productData);
+        setSelectedImage(productData.images?.[0] || "");
+        setSelectedSize(productData.sizeOptions?.[0] || "");
+        setSelectedColor(productData.colorOptions?.[0] || "");
+        setImageLoaded(false);
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
+      }
     };
 
-    navigate("/checkout", {
-      state: {
-        product: selectedProduct,
-      },
-    });
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [selectedImage]);
+
+  const handleBuyNow = () => {
+    const productToSend = {
+      ...product,
+      quantity,
+      size: selectedSize,
+      color: selectedColor,
+      image: selectedImage,
+    };
+    navigate("/checkout", { state: { product: productToSend } });
   };
 
-  if (!product) return <div className="p-4">Loading...</div>;
+  if (!product) {
+    return (
+      <p className="text-center mt-10 text-red-500">Loading product data...</p>
+    );
+  }
 
-  const totalPrice = (product.price * quantity).toFixed(2);
-
-  // Get two small images excluding the selectedImage
-  const smallImages = product.images.filter((img) => img !== selectedImage).slice(0, 2);
-
-  return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1">
-          {/* Large Selected Image */}
+  return (<>
+    
+    <div className="max-w-5xl mx-auto p-6">
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        
+        <div>
           <img
-            src={selectedImage}
+            src={`/images/${selectedImage}`}
             alt={product.title}
-            className="w-full h-auto rounded-xl object-cover max-h-[500px]"
+            className={`w-full rounded object-cover
+              transition-opacity duration-700 ease-in-out
+              ${imageLoaded ? "opacity-100" : "opacity-0"}
+              h-[300px] md:h-96
+            `}
+            onLoad={() => setImageLoaded(true)}
+            style={{ maxHeight: "24rem" }}
           />
-
-          {/* Small Images below */}
-          <div className="flex gap-4 mt-4">
-            {smallImages.map((img, i) => (
+          <div className="flex gap-2 mt-4 overflow-x-auto">
+            {product.images.map((img, index) => (
               <img
-                key={i}
-                src={img}
-                alt={`${product.title} small ${i + 1}`}
-                className="w-28 h-28 object-cover rounded-lg border cursor-pointer hover:scale-105 transition-transform"
+                key={index}
+                src={`/images/${img}`}
+                alt={`${product.title} - ${index + 1}`}
+                className={`w-20 h-20 object-cover rounded cursor-pointer border
+                  ${selectedImage === img ? "border-black" : "border-transparent"}
+                  hover:opacity-80 transition-opacity duration-300
+                `}
                 onClick={() => setSelectedImage(img)}
               />
             ))}
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col space-y-4">
-          <h1 className="text-3xl font-bold">{product.title}</h1>
+        <div>
+          <h1 className="text-3xl font-semibold mb-2">{product.title}</h1>
+          <p className="text-lg mb-4">Price: RS.{product.price}.00</p>
 
-          {product.variants?.sizes?.length > 0 && (
-            <div>
+          {product.sizeOptions?.length > 0 && (
+            <div className="mb-4">
               <label className="block font-medium mb-1">Size:</label>
               <select
-                className="border p-2 rounded w-40 text-sm"
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}
+                className="w-full border p-2 rounded"
               >
-                <option value="">Select size</option>
-                {product.variants.sizes.map((size, i) => (
-                  <option key={i} value={size}>
+                {product.sizeOptions.map((size) => (
+                  <option key={size} value={size}>
                     {size}
                   </option>
                 ))}
@@ -107,17 +108,16 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {product.variants?.colors?.length > 0 && (
-            <div>
+          {product.colorOptions?.length > 0 && (
+            <div className="mb-4">
               <label className="block font-medium mb-1">Color:</label>
               <select
-                className="border p-2 rounded w-40 text-sm"
                 value={selectedColor}
                 onChange={(e) => setSelectedColor(e.target.value)}
+                className="w-full border p-2 rounded"
               >
-                <option value="">Select color</option>
-                {product.variants.colors.map((color, i) => (
-                  <option key={i} value={color}>
+                {product.colorOptions.map((color) => (
+                  <option key={color} value={color}>
                     {color}
                   </option>
                 ))}
@@ -125,40 +125,38 @@ const ProductDetail = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-4">
-            <span className="font-medium">Quantity:</span>
+          <div className="mb-6 flex items-center gap-4">
+            <label className="font-medium">Quantity:</label>
             <button
-              onClick={() => handleQuantityChange("dec")}
-              className="px-2 py-1 bg-gray-200 rounded"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              className="px-3 py-1 border rounded"
             >
               -
             </button>
-            <span className="px-3">{quantity}</span>
+            <span>{quantity}</span>
             <button
-              onClick={() => handleQuantityChange("inc")}
-              className="px-2 py-1 bg-gray-200 rounded"
+              onClick={() => setQuantity((q) => q + 1)}
+              className="px-3 py-1 border rounded"
             >
               +
             </button>
           </div>
 
-          <p className="text-xl font-semibold">Total: RS.{totalPrice}</p>
-
           <button
             onClick={handleBuyNow}
-            className="bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700 transition mt-8 w-32"
+            className="bg-black text-white py-3 px-6 rounded hover:bg-gray-800 w-full"
           >
             Buy Now
           </button>
         </div>
       </div>
 
-      <div className="mt-10 border-t pt-6 text-gray-700">
-        <h2 className="text-xl font-semibold mb-2">Description</h2>
-        <p>{product.description}</p>
-      </div>
+      {product.description && (
+        <div className="mt-10 max-w-3xl mx-auto text-gray-700 whitespace-pre-line">
+          <h2 className="text-2xl font-semibold mb-3">Description</h2>
+          <p>{product.description}</p>
+        </div>
+      )}
     </div>
-  );
-};
-
-export default ProductDetail;
+  </>);
+}

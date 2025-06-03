@@ -4,12 +4,18 @@ const Product = require("../models/productModel");
 
 router.get("/", async (req, res) => {
   try {
+    console.log("GET /api/products called");
+
     const products = await Product.find({});
+    console.log("Products fetched successfully:", products.length);
+
     res.json(products);
   } catch (err) {
+    console.error("Error in GET /api/products:", err);
     res.status(500).json({ message: err.message });
   }
 });
+
 
 router.get("/:id", async (req, res) => {
   try {
