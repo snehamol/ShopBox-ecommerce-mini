@@ -11,11 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes")); 
-
-// Serve static images from backend (optional, if images stored in backend public folder)
 app.use("/images", express.static("public/images"));
 
 app.use((req, res, next) => {
