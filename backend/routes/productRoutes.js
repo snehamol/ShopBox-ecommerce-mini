@@ -2,28 +2,28 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/productModel");
 
+// GET /api/products - get all products
 router.get("/", async (req, res) => {
   try {
-    console.log("GET /api/products called");
-
-    const products = await Product.find({});
-    console.log("Products fetched successfully:", products.length);
-
+    const products = await Product.find({}).lean();
     res.json(products);
-  } catch (err) {
-    console.error("Error in GET /api/products:", err);
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Server error fetching products" });
   }
 });
 
-
+// GET /api/products/:id - fetch product by ID
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    const product = await Product.findById(req.params.id).lean();
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
     res.json(product);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ message: "Server error fetching product" });
   }
 });
 

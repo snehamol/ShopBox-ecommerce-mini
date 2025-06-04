@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ProductDetail() {
@@ -13,19 +14,24 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
-     try {
-      const res = await axios.get(`${API_BASE_URL}/products/${id}`);
-      const productData = res.data;
-      setProduct(productData);
-      setSelectedImage(productData.images?.[0] || "");
-      setSelectedSize(productData.sizeOptions?.[0] || "");
-      setSelectedColor(productData.colorOptions?.[0] || "");
-      setImageLoaded(false);
-    } catch (error){
+      try {
+        setError("");
+        const res = await axios.get(`${API_BASE_URL}/api/products/${id}`);
+        const productData = res.data;
+
+        setProduct(productData);
+        setSelectedImage(productData.images?.[0] || "");
+        setSelectedSize(productData.sizeOptions?.[0] || "");
+        setSelectedColor(productData.colorOptions?.[0] || "");
+        setQuantity(1);
+        setImageLoaded(false);
+      } catch (error) {
         console.error("Failed to fetch product:", error);
+        setError("Failed to load product. Please try again later.");
       }
     };
 
@@ -47,44 +53,55 @@ export default function ProductDetail() {
     navigate("/checkout", { state: { product: productToSend } });
   };
 
-  if (!product) {
+  if (error) {
     return (
-      <p className="text-center mt-10 text-red-500">Loading product data...</p>
+      <p className="text-center mt-10 text-red-600 font-semibold">{error}</p>
     );
   }
 
-  return (<>
-    
+  if (!product) {
+    return (
+      <p className="text-center mt-10 text-gray-700 font-medium">
+        Loading product data...
+      </p>
+    );
+  }
+
+  return (
     <div className="max-w-5xl mx-auto p-6">
-      
       <div className="grid md:grid-cols-2 gap-8">
-        
         <div>
-          <img
-            src={`/images/${selectedImage}`}
-            alt={product.title}
-            className={`w-full rounded object-cover
-              transition-opacity duration-700 ease-in-out
-              ${imageLoaded ? "opacity-100" : "opacity-0"}
-              h-[300px] md:h-96
-            `}
-            onLoad={() => setImageLoaded(true)}
-            style={{ maxHeight: "24rem" }}
-          />
-          <div className="flex gap-2 mt-4 overflow-x-auto">
-            {product.images.map((img, index) => (
-              <img
-                key={index}
-                src={`/images/${img}`}
-                alt={`${product.title} - ${index + 1}`}
-                className={`w-20 h-20 object-cover rounded cursor-pointer border
-                  ${selectedImage === img ? "border-black" : "border-transparent"}
-                  hover:opacity-80 transition-opacity duration-300
-                `}
-                onClick={() => setSelectedImage(img)}
-              />
-            ))}
-          </div>
+          {selectedImage ? (
+            <img
+              src={`/images/${selectedImage}`}
+              alt={product.title}
+              className={`w-full rounded object-cover transition-opacity duration-700 ease-in-out ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              } h-[300px] md:h-96`}
+              onLoad={() => setImageLoaded(true)}
+              style={{ maxHeight: "24rem" }}
+            />
+          ) : (
+            <div className="w-full h-[300px] md:h-96 bg-gray-200 flex items-center justify-center rounded">
+              <span className="text-gray-400">No Image Available</span>
+            </div>
+          )}
+
+          {product.images?.length > 0 && (
+            <div className="flex gap-2 mt-4 overflow-x-auto">
+              {product.images.map((img, index) => (
+                <img
+                  key={index}
+                  src={`/images/${img}`}
+                  alt={`${product.title} - ${index + 1}`}
+                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${
+                    selectedImage === img ? "border-black" : "border-transparent"
+                  } hover:opacity-80 transition-opacity duration-300`}
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -129,7 +146,9 @@ export default function ProductDetail() {
             <label className="font-medium">Quantity:</label>
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-3 py-1 border rounded"
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              aria-label="Decrease quantity"
+              disabled={quantity === 1}
             >
               -
             </button>
@@ -137,6 +156,7 @@ export default function ProductDetail() {
             <button
               onClick={() => setQuantity((q) => q + 1)}
               className="px-3 py-1 border rounded"
+              aria-label="Increase quantity"
             >
               +
             </button>
@@ -158,5 +178,5 @@ export default function ProductDetail() {
         </div>
       )}
     </div>
-  </>);
+  );
 }

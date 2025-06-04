@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function ThankYouPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -17,11 +20,11 @@ export default function ThankYouPage() {
       return;
     }
 
-      fetch(`${API_BASE_URL}/orders/${orderNumber}`)
+    fetch(`${API_BASE_URL}/api/orders/${orderNumber}`)
       .then((res) => {
-      if (!res.ok) throw new Error("Failed to fetch order details.");
-      return res.json();
-    })
+        if (!res.ok) throw new Error("Failed to fetch order details.");
+        return res.json();
+      })
       .then((data) => {
         setOrderDetails(data);
         setLoading(false);
@@ -64,7 +67,6 @@ export default function ThankYouPage() {
             alt={product.title}
             className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded mx-auto"
           />
-
           <div className="flex-1 text-center sm:text-left">
             <p className="font-semibold text-lg">{product.title}</p>
             <p className="text-gray-600 text-sm">
