@@ -8,11 +8,11 @@ export default function LandingPage() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    console.log("API_BASE_URL:", API_BASE_URL); // Check this logs correctly
+    console.log("API_BASE_URL:", API_BASE_URL); 
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/products`);
+        const res = await axios.get(`${API_BASE_URL}/products`);
         setProducts(res.data);
       } catch (error) {
         console.error("Failed to fetch products:", error);

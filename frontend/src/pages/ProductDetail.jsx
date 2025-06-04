@@ -20,7 +20,7 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setError("");
-        const res = await axios.get(`${API_BASE_URL}/api/products/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/products/${id}`);
         const productData = res.data;
 
         setProduct(productData);

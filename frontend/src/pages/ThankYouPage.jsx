@@ -20,7 +20,7 @@ export default function ThankYouPage() {
       return;
     }
 
-    fetch(`${API_BASE_URL}/api/orders/${orderNumber}`)
+    fetch(`${API_BASE_URL}/orders/${orderNumber}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch order details.");
         return res.json();
